@@ -76,6 +76,17 @@ RUN set -ex \
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 
+RUN python -c "from airflow import models, settings \
+               from airflow.contrib.auth.backends.password_auth import PasswordUser \
+               user = PasswordUser(models.User()) \
+               user.username = 'new_user_name' \
+               user.email = 'new_user_email@example.com' \
+               user.password = 'set_the_password' \
+               session = settings.Session() \
+               session.add(user) \
+               session.commit() \
+               session.close()"  
+
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
 EXPOSE 8080 5555 8793
